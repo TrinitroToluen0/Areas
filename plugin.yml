@@ -1,0 +1,7 @@
+---
+name: AreaPermissions
+version: 0.0.1
+main: Mencoreh\AreaPermissions\Main
+api: 5.13.0
+src-namespace-prefix: Mencoreh\AreaPermissions
+...

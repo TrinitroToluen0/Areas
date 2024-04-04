@@ -1,0 +1,9 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/TrinitroToluen0/AreaPermissions
+build-by-default: true
+branches:
+- main
+projects:
+  AreaPermissions:
+    path: ""
+    icon: "icon.png"
+...

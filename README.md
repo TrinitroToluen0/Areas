@@ -1,5 +1,5 @@
 
-<a href="https://poggit.pmmp.io/p/AreaPermissions"><img src="https://poggit.pmmp.io/shield.state/AreaPermissions"></a>
+[![](https://poggit.pmmp.io/shield.state/AreaPermissions)](https://poggit.pmmp.io/p/AreaPermissions)
 
 # Setup
 Go to `plugin_data/AreaPermissions/config.yml` and setup your areas, the message to display and the permissions to grant/remove when entering/leaving the area

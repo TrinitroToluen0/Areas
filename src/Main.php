@@ -70,7 +70,7 @@ class Main extends PluginBase implements Listener
 
                 if ($isInArea) {
                     $messageEntering = $this->getConfig()->get('message-entering');
-                    if (isset($messageEntering) && $messageEntering != false && !empty($messageEntering)) {
+                    if ($messageEntering) {
                         $message = str_replace('{AREA}', $areaName, $messageEntering);
                         $player->sendMessage($message);
                     }
@@ -79,7 +79,7 @@ class Main extends PluginBase implements Listener
                     }
                 } else {
                     $messageLeaving = $this->getConfig()->get('message-leaving');
-                    if (isset($messageLeaving) && $messageLeaving != false && !empty($messageLeaving)) {
+                    if ($messageLeaving) {
                         $message = str_replace('{AREA}', $areaName, $messageLeaving);
                         $player->sendMessage($message);
                     }

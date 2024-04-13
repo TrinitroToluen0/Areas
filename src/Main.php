@@ -2,91 +2,186 @@
 
 declare(strict_types=1);
 
-namespace Mencoreh\AreaPermissions;
+namespace Mencoreh\Areas;
 
+use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use Mencoreh\Areas\Area;
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\player\Player;
+use pocketmine\entity\effect\StringToEffectParser;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\player\GameMode;
 
 class Main extends PluginBase implements Listener
 {
 
-    private $inArea = [];
+    public static Main $instance;
+    public array $areas = [];
+    public array $inArea;
+    public array $playerEffects;
+    private const EFFECT_MAX_DURATION = 2147483647;
 
     public function onEnable(): void
     {
+        self::$instance = $this;
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveDefaultConfig();
+        foreach ($this->getConfig()->get("areas") as $areaName => $areaData) {
+            $this->constructAreas($areaName, $areaData);
+        }
     }
+
+    public function constructAreas(string $areaName, array $areaData)
+    {
+        // TODO: Move this to the Area __constructor()
+        $area = new Area();
+        $area->setName($areaName);
+        $area->setBlockPlace($areaData["blockPlace"]);
+        $area->setBlockBreak($areaData["blockBreak"]);
+        $area->setBlockInteract($areaData["blockInteract"]);
+        $area->setEntityDamageFlag($areaData["entityDamage"]);
+        $area->setX1($areaData["x1"]);
+        $area->setY1($areaData["y1"]);
+        $area->setZ1($areaData["z1"]);
+        $area->setX2($areaData["x2"]);
+        $area->setY2($areaData["y2"]);
+        $area->setZ2($areaData["z2"]);
+        $area->setWorld($areaData["world"]);
+        $area->setEffects($areaData["effects"]);
+        array_push($this->areas, $area);
+    }
+
+    public function onQuit(PlayerQuitEvent $event): void
+    {
+        $playerName = $event->getPlayer()->getName();
+        if(isset($this->inArea[$playerName])) unset($this->inArea[$playerName]);
+        if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
+    }
+
 
     public function onMove(PlayerMoveEvent $event): void
     {
-
-        if ($event->isCancelled()) {
-            return;
-        }
-
         $player = $event->getPlayer();
-        $name = $player->getName();
-        $pos = $player->getLocation();
-        $x = intval($pos->getX());
-        $y = intval($pos->getY());
-        $z = intval($pos->getZ());
-        $world = $player->getWorld()->getFolderName();
-
-        // Get the areas from the configuration file
-        $areas = $this->getConfig()->get('areas');
-
-        if ($areas === false) {
-            $this->getLogger()->error("Failed to load areas from the config, please fix the configuration.");
-            return;
-        }
-
-        foreach ($areas as $areaName => $areaData) {
-
-            // Checks if the player is in the area's world
-            if ($world !== $areaData['world']) {
-                continue;
-            }
-
-            // Define the coordinates of the area
-            $x1 = $areaData['x1'];
-            $y1 = $areaData['y1'];
-            $z1 = $areaData['z1'];
-            $x2 = $areaData['x2'];
-            $y2 = $areaData['y2'];
-            $z2 = $areaData['z2'];
-
-            // Checks if the player is inside the area
-            $isInArea = 
-                $x >= min($x1, $x2) && $x <= max($x1, $x2) &&
-                $y >= min($y1, $y2) && $y <= max($y1, $y2) &&
-                $z >= min($z1, $z2) && $z <= max($z1, $z2);
+        /** @var Area $area */
+        foreach ($this->areas as $area) {
+            $isInArea = $area->isInside($player->getPosition());
+            $name = $area->getName();
 
             // Check if the area state has changed
             if (!isset($this->inArea[$name]) || $isInArea !== $this->inArea[$name]) {
                 $this->inArea[$name] = $isInArea;
-                $attachment = $player->addAttachment($this);
 
                 if ($isInArea) {
+                    $this->playerEffects[$player->getName()] = $player->getEffects()->all();
                     $messageEntering = $this->getConfig()->get('message-entering');
                     if ($messageEntering) {
-                        $message = str_replace('{AREA}', $areaName, $messageEntering);
+                        $message = str_replace('{AREA}', $area->getName(), $messageEntering);
                         $player->sendMessage($message);
                     }
-                    foreach ($areaData['permissions'] as $permission) {
-                        $attachment->setPermission($permission, true);
+                    foreach($area->getEffects() as $effectData) {
+                        $effectData = explode('-', $effectData);
+                        $effectName = $effectData[0];
+                        $amplifier = (int) ($effectData[1] ?? 1) - 1;
+                        $effect = StringToEffectParser::getInstance()->parse($effectName);
+                        if (is_null($effect)) continue;
+                        $player->getEffects()->add(new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false));
                     }
                 } else {
+                    if (isset($this->playerEffects[$player->getName()])) {
+                        $player->getEffects()->clear();
+                        foreach ($this->playerEffects[$player->getName()] as $effect) {
+                            $player->getEffects()->add($effect);
+                        }
+                        if (isset($this->playerEffects[$player->getName()])) unset($this->playerEffects[$player->getName()]);
+                    }
                     $messageLeaving = $this->getConfig()->get('message-leaving');
                     if ($messageLeaving) {
-                        $message = str_replace('{AREA}', $areaName, $messageLeaving);
+                        $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
                         $player->sendMessage($message);
                     }
-                    foreach ($areaData['permissions'] as $permission) {
-                        $attachment->setPermission($permission, false);
-                    }
                 }
+            }
+        }
+    }
+
+
+    /**
+     * @priority HIGHEST
+     * @handleCancelled true
+     */
+    public function onBlockPlace(BlockPlaceEvent $event): void
+    {
+        /** @var Area $area */
+        foreach ($this->areas as $area) {
+            foreach ($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]) {
+                if (!$area->isInside($block->getPosition())) continue;
+                if ($area->canPlaceBlocks() === true) {
+                    if ($event->isCancelled()) $event->uncancel();
+                } elseif ($area->canPlaceBlocks() === false) {
+                    $event->cancel();
+                }
+            }
+        }
+    }
+
+    /**
+     * @priority HIGHEST
+     * @handleCancelled true
+     */
+    public function onBlockBreak(BlockBreakEvent $event): void
+    {
+        $block = $event->getBlock();
+        /** @var Area $area */
+        foreach ($this->areas as $area) {
+            if (!$area->isInside($block->getPosition())) continue;
+            if ($area->canBreakBlocks() === true) {
+                if ($event->isCancelled()) $event->uncancel();
+            } elseif ($area->canBreakBlocks() === false) {
+                $event->cancel();
+            }
+        }
+    }
+
+
+    /**
+     * @priority HIGHEST
+     * @handleCancelled true
+     */
+    public function onInteract(PlayerInteractEvent $event): void
+    {
+        $block = $event->getBlock();
+        /** @var Area $area */
+        foreach ($this->areas as $area) {
+            if (!$area->isInside($block->getPosition())) continue;
+            if ($area->canInteract() === true) {
+                if ($event->isCancelled()) $event->uncancel();
+            } elseif ($area->canInteract() === false) {
+                $event->cancel();
+            }
+        }
+    }
+
+    /**
+     * @priority HIGHEST
+     * @handleCancelled true
+     */
+    public function onEntityDamage(EntityDamageEvent $event): void
+    {
+        $entity = $event->getEntity();
+        /** @var Area $area */
+        foreach ($this->areas as $area) {
+            if (!$area->isInside($entity->getPosition())) continue;
+            if ($area->canEntitiesBeDamaged() === true) {
+                if($entity instanceof Player && ($entity->getGamemode() === GameMode::CREATIVE() || $entity->getGamemode() === GameMode::ADVENTURE())) continue; 
+                if ($event->isCancelled()) $event->uncancel();
+            } elseif ($area->canEntitiesBeDamaged() === false) {
+                $event->cancel();
             }
         }
     }

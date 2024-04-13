@@ -1,7 +1,7 @@
 ---
-name: AreaPermissions
+name: Areas
 version: 1.0.0
-main: Mencoreh\AreaPermissions\Main
+main: Mencoreh\Areas\Main
 api: 5.13.0
-src-namespace-prefix: Mencoreh\AreaPermissions
+src-namespace-prefix: Mencoreh\Areas
 ...

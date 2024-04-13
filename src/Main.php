@@ -155,10 +155,16 @@ class Main extends PluginBase implements Listener
      */
     public function onInteract(PlayerInteractEvent $event): void
     {
+        $player = $event->getPlayer();
         $block = $event->getBlock();
+        
         /** @var Area $area */
         foreach ($this->areas as $area) {
-            if (!$area->isInside($block->getPosition())) continue;
+            if($area->getInteractCheckType() === "player") {
+                if (!$area->isInside($player->getPosition())) continue;
+            } else if($area->getInteractCheckType() === "block") {
+                if (!$area->isInside($block->getPosition())) continue;
+            }
             if ($area->canInteract() === true) {
                 if ($event->isCancelled()) $event->uncancel();
             } elseif ($area->canInteract() === false) {

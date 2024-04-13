@@ -12,6 +12,7 @@ class Area
     private bool $blockPlace;
     private bool $blockBreak;
     private bool $blockInteract;
+    private string $interactCheckType;
     private bool $entityDamage;
     private array $effects;
 
@@ -70,6 +71,14 @@ class Area
     public function setBlockInteract(bool $value): void
     {
         $this->blockInteract = $value;
+    }
+
+    public function getInteractCheckType() : string {
+        return $this->interactCheckType;
+    }
+
+    public function setInteractCheckType(string $value): void {
+        $this->interactCheckType = $value;
     }
 
     public function canEntitiesBeDamaged(): bool

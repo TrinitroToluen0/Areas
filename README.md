@@ -1,5 +1,5 @@
 # Setup
-Go to `plugin_data/Areas/config.yml` and setup your areas, the message to display and the permissions to grant/remove when entering/leaving the area
+Go to `plugin_data/Areas/config.yml` and setup your areas, the message to display, the events allowed, and the effects given. 
 
 # Config:
 ```yaml
@@ -11,7 +11,7 @@ message-leaving: "§cLeaving area {AREA}" # The message to be sent to the player
 areas:
   area1: # Area name
     x1: 100 # X coord of the first position
-    y1: 64  # Y coord of the second position
+    y1: 64  # Y coord of the first position
     z1: 100 # Z coord of the first position
     x2: 200 # X coord of the second position
     y2: 70  # Y coord of the second position
@@ -23,6 +23,7 @@ areas:
     blockPlace: false # Wheter block placing is allowed in this area
     blockBreak: false # Whether block breaking is allowed in this area
     blockInteract: true # Whether interacting with blocks (chests, doors, etc) is allowed in this area
+    interactCheckType: "player" # Options are "player" and "block". If set to "player", it will check if player is in area, if set to "block" it will check if block is in area.
     entityDamage: false # Whether entities can be damaged in this area (this includes PVP, PVE and natural damage)
 
     # A list of the effects given when entering this area, and removed when leaving it.
@@ -40,6 +41,7 @@ areas:
     blockPlace: false
     blockBreak: false
     blockInteract: true
+    interactCheckType: "player"
     entityDamage: false
     effects:
       - "speed-4"

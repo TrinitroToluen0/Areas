@@ -6,7 +6,7 @@ message-leaving: "§cLeaving area {AREA}" # The message to be sent to the player
 areas:
   area1: # Area name
     x1: 100 # X coord of the first position
-    y1: 64  # Y coord of the second position
+    y1: 64  # Y coord of the first position
     z1: 100 # Z coord of the first position
     x2: 200 # X coord of the second position
     y2: 70  # Y coord of the second position

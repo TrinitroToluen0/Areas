@@ -4,4 +4,8 @@ version: 1.0.0
 main: Mencoreh\Areas\Main
 api: 5.13.0
 src-namespace-prefix: Mencoreh\Areas
+permissions:
+  areas.bypass:
+    description: "Bypasses the event cancellations of the Areas plugin."
+    default: op
 ...

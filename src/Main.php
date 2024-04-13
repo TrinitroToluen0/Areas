@@ -13,6 +13,7 @@ use pocketmine\event\player\PlayerMoveEvent;
 use Mencoreh\Areas\Area;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\player\Player;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\event\player\PlayerQuitEvent;
@@ -45,6 +46,7 @@ class Main extends PluginBase implements Listener
         $area->setBlockPlace($areaData["blockPlace"]);
         $area->setBlockBreak($areaData["blockBreak"]);
         $area->setBlockInteract($areaData["blockInteract"]);
+        $area->setInteractCheckType($areaData["interactCheckType"]);
         $area->setEntityDamageFlag($areaData["entityDamage"]);
         $area->setX1($areaData["x1"]);
         $area->setY1($areaData["y1"]);
@@ -117,13 +119,15 @@ class Main extends PluginBase implements Listener
      */
     public function onBlockPlace(BlockPlaceEvent $event): void
     {
+        $player = $event->getPlayer();
+
         /** @var Area $area */
         foreach ($this->areas as $area) {
             foreach ($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]) {
                 if (!$area->isInside($block->getPosition())) continue;
                 if ($area->canPlaceBlocks() === true) {
                     if ($event->isCancelled()) $event->uncancel();
-                } elseif ($area->canPlaceBlocks() === false) {
+                } elseif ($area->canPlaceBlocks() === false && !$player->hasPermission("areas.bypass")) {
                     $event->cancel();
                 }
             }
@@ -137,12 +141,14 @@ class Main extends PluginBase implements Listener
     public function onBlockBreak(BlockBreakEvent $event): void
     {
         $block = $event->getBlock();
+        $player = $event->getPlayer();
+
         /** @var Area $area */
         foreach ($this->areas as $area) {
             if (!$area->isInside($block->getPosition())) continue;
             if ($area->canBreakBlocks() === true) {
                 if ($event->isCancelled()) $event->uncancel();
-            } elseif ($area->canBreakBlocks() === false) {
+            } elseif ($area->canBreakBlocks() === false && !$player->hasPermission("areas.bypass")) {
                 $event->cancel();
             }
         }
@@ -157,7 +163,6 @@ class Main extends PluginBase implements Listener
     {
         $player = $event->getPlayer();
         $block = $event->getBlock();
-        
         /** @var Area $area */
         foreach ($this->areas as $area) {
             if($area->getInteractCheckType() === "player") {
@@ -167,7 +172,7 @@ class Main extends PluginBase implements Listener
             }
             if ($area->canInteract() === true) {
                 if ($event->isCancelled()) $event->uncancel();
-            } elseif ($area->canInteract() === false) {
+            } elseif ($area->canInteract() === false && !$player->hasPermission("areas.bypass")) {
                 $event->cancel();
             }
         }
@@ -180,6 +185,7 @@ class Main extends PluginBase implements Listener
     public function onEntityDamage(EntityDamageEvent $event): void
     {
         $entity = $event->getEntity();
+
         /** @var Area $area */
         foreach ($this->areas as $area) {
             if (!$area->isInside($entity->getPosition())) continue;
@@ -187,7 +193,14 @@ class Main extends PluginBase implements Listener
                 if($entity instanceof Player && ($entity->getGamemode() === GameMode::CREATIVE() || $entity->getGamemode() === GameMode::ADVENTURE())) continue; 
                 if ($event->isCancelled()) $event->uncancel();
             } elseif ($area->canEntitiesBeDamaged() === false) {
-                $event->cancel();
+                if ($event instanceof EntityDamageByEntityEvent) {
+                    $damager = $event->getDamager();
+                    if ($damager instanceof Player && !$damager->hasPermission("areas.bypass")) {
+                        $event->cancel();
+                    }
+                } else {
+                    $event->cancel();
+                }
             }
         }
     }

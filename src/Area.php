@@ -9,11 +9,11 @@ use pocketmine\world\Position;
 class Area
 {
 
-    private bool $blockPlace;
-    private bool $blockBreak;
-    private bool $blockInteract;
+    private ?bool $blockPlace;
+    private ?bool $blockBreak;
+    private ?bool $blockInteract;
     private string $interactCheckType;
-    private bool $entityDamage;
+    private ?bool $entityDamage;
     private array $effects;
 
     private string $name;
@@ -27,68 +27,84 @@ class Area
     private int $y2;
     private int $z2;
 
-    public function getName() : string {
-        return $this->name;
-    }
-
-    public function setName(string $name) : void {
-        $this->name = $name;
-    }
-
-    public function canPlaceBlocks(): bool
+    public function canPlaceBlocks(): ?bool
     {
         return $this->blockPlace;
     }
 
-    public function getWorld() : string {
-        return $this->world;
-    }
-
-    public function setWorld(string $world) : void {
-        $this->world = $world;
-    }
-
-    public function setBlockPlace(bool $blockPlace): void
+    public function setBlockPlace(?bool $blockPlace): void
     {
         $this->blockPlace = $blockPlace;
     }
 
-    public function canBreakBlocks(): bool
+    public function canBreakBlocks(): ?bool
     {
         return $this->blockBreak;
     }
 
-    public function setBlockBreak(bool $blockBreak): void
+    public function setBlockBreak(?bool $blockBreak): void
     {
         $this->blockBreak = $blockBreak;
     }
 
-    public function canInteract(): bool
+    public function canInteract(): ?bool
     {
         return $this->blockInteract;
     }
 
-    public function setBlockInteract(bool $value): void
+    public function setBlockInteract(?bool $value): void
     {
         $this->blockInteract = $value;
     }
 
-    public function getInteractCheckType() : string {
+    public function getInteractCheckType(): string
+    {
         return $this->interactCheckType;
     }
 
-    public function setInteractCheckType(string $value): void {
+    public function setInteractCheckType(string $value): void
+    {
         $this->interactCheckType = $value;
     }
 
-    public function canEntitiesBeDamaged(): bool
+    public function canEntitiesBeDamaged(): ?bool
     {
         return $this->entityDamage;
     }
 
-    public function setEntityDamageFlag(bool $value): void
+    public function setEntityDamageFlag(?bool $value): void
     {
         $this->entityDamage = $value;
+    }
+
+    public function getEffects(): array
+    {
+        return $this->effects;
+    }
+
+    public function setEffects(array $effects): void
+    {
+        $this->effects = $effects;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getWorld(): string
+    {
+        return $this->world;
+    }
+
+    public function setWorld(string $world): void
+    {
+        $this->world = $world;
     }
 
     public function getX1(): int
@@ -149,16 +165,6 @@ class Area
     public function setZ2(int $z2): void
     {
         $this->z2 = $z2;
-    }
-
-    public function getEffects(): array
-    {
-        return $this->effects;
-    }
-
-    public function setEffects(array $effects): void
-    {
-        $this->effects = $effects;
     }
 
     public function isInside(Position $position): bool

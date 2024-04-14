@@ -114,7 +114,7 @@ class Main extends PluginBase implements Listener
 
 
     /**
-     * @priority HIGHEST
+     * @priority HIGH
      * @handleCancelled true
      */
     public function onBlockPlace(BlockPlaceEvent $event): void
@@ -135,7 +135,7 @@ class Main extends PluginBase implements Listener
     }
 
     /**
-     * @priority HIGHEST
+     * @priority HIGH
      * @handleCancelled true
      */
     public function onBlockBreak(BlockBreakEvent $event): void
@@ -156,7 +156,7 @@ class Main extends PluginBase implements Listener
 
 
     /**
-     * @priority HIGHEST
+     * @priority HIGH
      * @handleCancelled true
      */
     public function onInteract(PlayerInteractEvent $event): void
@@ -179,7 +179,7 @@ class Main extends PluginBase implements Listener
     }
 
     /**
-     * @priority HIGHEST
+     * @priority HIGH
      * @handleCancelled true
      */
     public function onEntityDamage(EntityDamageEvent $event): void

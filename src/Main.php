@@ -24,7 +24,6 @@ class Main extends PluginBase implements Listener
 
     public static Main $instance;
     public array $areas = [];
-    public array $inArea;
     public array $playerEffects;
     private const EFFECT_MAX_DURATION = 2147483647;
 
@@ -34,35 +33,14 @@ class Main extends PluginBase implements Listener
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveDefaultConfig();
         foreach ($this->getConfig()->get("areas") as $areaName => $areaData) {
-            $this->constructAreas($areaName, $areaData);
+            $area = new Area($areaName);
+            array_push($this->areas, $area);
         }
-    }
-
-    public function constructAreas(string $areaName, array $areaData)
-    {
-        // TODO: Move this to the Area __constructor()
-        $area = new Area();
-        $area->setName($areaName);
-        $area->setBlockPlace($areaData["blockPlace"]);
-        $area->setBlockBreak($areaData["blockBreak"]);
-        $area->setBlockInteract($areaData["blockInteract"]);
-        $area->setInteractCheckType($areaData["interactCheckType"]);
-        $area->setEntityDamageFlag($areaData["entityDamage"]);
-        $area->setX1($areaData["x1"]);
-        $area->setY1($areaData["y1"]);
-        $area->setZ1($areaData["z1"]);
-        $area->setX2($areaData["x2"]);
-        $area->setY2($areaData["y2"]);
-        $area->setZ2($areaData["z2"]);
-        $area->setWorld($areaData["world"]);
-        $area->setEffects($areaData["effects"]);
-        array_push($this->areas, $area);
     }
 
     public function onQuit(PlayerQuitEvent $event): void
     {
         $playerName = $event->getPlayer()->getName();
-        if(isset($this->inArea[$playerName])) unset($this->inArea[$playerName]);
         if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
     }
 
@@ -70,43 +48,44 @@ class Main extends PluginBase implements Listener
     public function onMove(PlayerMoveEvent $event): void
     {
         $player = $event->getPlayer();
+        $from = $event->getFrom();
+        $to = $event->getTo();
+        if ($from->getX() === $to->getX() && $from->getY() === $to->getY() && $from->getZ() === $to->getZ()) return;
+
         /** @var Area $area */
         foreach ($this->areas as $area) {
-            $isInArea = $area->isInside($player->getPosition());
-            $name = $area->getName();
 
-            // Check if the area state has changed
-            if (!isset($this->inArea[$name]) || $isInArea !== $this->inArea[$name]) {
-                $this->inArea[$name] = $isInArea;
-
-                if ($isInArea) {
-                    $this->playerEffects[$player->getName()] = $player->getEffects()->all();
-                    $messageEntering = $this->getConfig()->get('message-entering');
-                    if ($messageEntering) {
-                        $message = str_replace('{AREA}', $area->getName(), $messageEntering);
-                        $player->sendMessage($message);
+            // If player enters an area
+            if(!$area->isInside($from) && $area->isInside($to)) {
+                $this->playerEffects[$player->getName()] = $player->getEffects()->all();
+                $messageEntering = $this->getConfig()->get('message-entering');
+                if ($messageEntering) {
+                    $message = str_replace('{AREA}', $area->getName(), $messageEntering);
+                    $player->sendMessage($message);
+                }
+                foreach ($area->getEffects() as $effectData) {
+                    $effectData = explode('-', $effectData);
+                    $effectName = $effectData[0];
+                    $amplifier = (int) ($effectData[1] ?? 1) - 1;
+                    $effect = StringToEffectParser::getInstance()->parse($effectName);
+                    if (is_null($effect)) continue;
+                    $player->getEffects()->add(new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false));
+                }
+            } 
+            
+            // If players leaves an area
+            if($area->isInside($from) && !$area->isInside($to)) {
+                if (isset($this->playerEffects[$player->getName()])) {
+                    $player->getEffects()->clear();
+                    foreach ($this->playerEffects[$player->getName()] as $effect) {
+                        $player->getEffects()->add($effect);
                     }
-                    foreach($area->getEffects() as $effectData) {
-                        $effectData = explode('-', $effectData);
-                        $effectName = $effectData[0];
-                        $amplifier = (int) ($effectData[1] ?? 1) - 1;
-                        $effect = StringToEffectParser::getInstance()->parse($effectName);
-                        if (is_null($effect)) continue;
-                        $player->getEffects()->add(new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false));
-                    }
-                } else {
-                    if (isset($this->playerEffects[$player->getName()])) {
-                        $player->getEffects()->clear();
-                        foreach ($this->playerEffects[$player->getName()] as $effect) {
-                            $player->getEffects()->add($effect);
-                        }
-                        if (isset($this->playerEffects[$player->getName()])) unset($this->playerEffects[$player->getName()]);
-                    }
-                    $messageLeaving = $this->getConfig()->get('message-leaving');
-                    if ($messageLeaving) {
-                        $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
-                        $player->sendMessage($message);
-                    }
+                    if (isset($this->playerEffects[$player->getName()])) unset($this->playerEffects[$player->getName()]);
+                }
+                $messageLeaving = $this->getConfig()->get('message-leaving');
+                if ($messageLeaving) {
+                    $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
+                    $player->sendMessage($message);
                 }
             }
         }

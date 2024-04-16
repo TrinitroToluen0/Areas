@@ -11,7 +11,7 @@ class Area
 
     private ?bool $blockPlace;
     private ?bool $blockBreak;
-    private ?bool $blockInteract;
+    private ?bool $playerInteract;
     private string $interactCheckType;
     private ?bool $entityDamage;
     private array $effects;
@@ -26,6 +26,24 @@ class Area
     private int $x2;
     private int $y2;
     private int $z2;
+
+    public function __construct($areaName) {
+        $areaData = Main::$instance->getConfig()->getNested("areas.$areaName");
+        $this->setName($areaName);
+        $this->setBlockPlace($areaData["blockPlace"]);
+        $this->setBlockBreak($areaData["blockBreak"]);
+        $this->setPlayerInteract($areaData["playerInteract"]);
+        $this->setInteractCheckType($areaData["interactCheckType"]);
+        $this->setEntityDamageFlag($areaData["entityDamage"]);
+        $this->setX1($areaData["x1"]);
+        $this->setY1($areaData["y1"]);
+        $this->setZ1($areaData["z1"]);
+        $this->setX2($areaData["x2"]);
+        $this->setY2($areaData["y2"]);
+        $this->setZ2($areaData["z2"]);
+        $this->setWorld($areaData["world"]);
+        $this->setEffects($areaData["effects"]);
+    }
 
     public function canPlaceBlocks(): ?bool
     {
@@ -49,12 +67,12 @@ class Area
 
     public function canInteract(): ?bool
     {
-        return $this->blockInteract;
+        return $this->playerInteract;
     }
 
-    public function setBlockInteract(?bool $value): void
+    public function setPlayerInteract(?bool $value): void
     {
-        $this->blockInteract = $value;
+        $this->playerInteract = $value;
     }
 
     public function getInteractCheckType(): string

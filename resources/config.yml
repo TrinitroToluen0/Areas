@@ -17,7 +17,7 @@ areas:
     # an event is cancelled by another plugin (or PM itself) but you set that event to true here, the event will be uncancelled.
     blockPlace: false # Wheter block placing is allowed in this area
     blockBreak: false # Whether block breaking is allowed in this area
-    blockInteract: true # Whether interacting with blocks (chests, doors, etc) is allowed in this area
+    playerInteract: true # Whether interacting with blocks (chests, doors, etc) is allowed in this area
     interactCheckType: "player" # Options are "player" and "block". If set to "player", it will check if player is in area, if set to "block" it will check if block is in area.
     entityDamage: false # Whether entities can be damaged in this area (this includes PVP, PVE and natural damage)
 
@@ -35,7 +35,7 @@ areas:
     world: "world"
     blockPlace: false
     blockBreak: false
-    blockInteract: true
+    playerInteract: true
     interactCheckType: "player"
     entityDamage: false
     effects:

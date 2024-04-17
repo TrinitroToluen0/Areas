@@ -172,9 +172,12 @@ class Main extends PluginBase implements Listener
                 if($entity instanceof Player && $entity->isCreative()) continue; 
                 if ($event->isCancelled()) $event->uncancel();
             } elseif ($area->canEntitiesBeDamaged() === false) {
+                $entity->sendMessage("llegue acá");
                 if ($event instanceof EntityDamageByEntityEvent) {
+                    $entity->sendMessage("2");
                     $damager = $event->getDamager();
                     if ($damager instanceof Player && !$damager->hasPermission("areas.bypass")) {
+                        $entity->sendMessage("3");
                         $event->cancel();
                     }
                 } else {

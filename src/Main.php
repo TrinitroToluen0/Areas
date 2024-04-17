@@ -17,7 +17,6 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\player\Player;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\player\GameMode;
 
 class Main extends PluginBase implements Listener
 {

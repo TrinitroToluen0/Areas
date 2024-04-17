@@ -169,7 +169,7 @@ class Main extends PluginBase implements Listener
         foreach ($this->areas as $area) {
             if (!$area->isInside($entity->getPosition())) continue;
             if ($area->canEntitiesBeDamaged() === true) {
-                if($entity instanceof Player && ($entity->getGamemode() === GameMode::CREATIVE() || $entity->getGamemode() === GameMode::ADVENTURE())) continue; 
+                if($entity instanceof Player && $entity->isCreative()) continue; 
                 if ($event->isCancelled()) $event->uncancel();
             } elseif ($area->canEntitiesBeDamaged() === false) {
                 if ($event instanceof EntityDamageByEntityEvent) {

@@ -38,12 +38,20 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onQuit(PlayerQuitEvent|PlayerDeathEvent $event): void
+    public function onQuit(PlayerQuitEvent $event): void
     {
-        $playerName = $event->getPlayer()->getName();
-        if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
+        $this->clearPlayerData($event->getPlayer());
     }
 
+    public function onDeath(PlayerDeathEvent $event): void
+    {
+        $this->clearPlayerData($event->getPlayer());
+    }
+
+    public function clearPlayerData(Player $player): void {
+        $playerName = $player->getName();
+        if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
+    }
 
     public function onMove(PlayerMoveEvent $event): void
     {

@@ -18,18 +18,18 @@ use pocketmine\player\Player;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\utils\SingletonTrait;
 
 class Main extends PluginBase implements Listener
 {
-    use SingletonTrait;
 
+    public static Main $instance;
     public array $areas = [];
     public array $playerEffects;
     private const EFFECT_MAX_DURATION = 2147483647;
 
     public function onEnable(): void
     {
+        self::$instance = $this;
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveDefaultConfig();
         foreach ($this->getConfig()->get("areas") as $areaName => $areaData) {

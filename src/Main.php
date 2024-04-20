@@ -16,6 +16,7 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\player\Player;
 use pocketmine\entity\effect\StringToEffectParser;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\utils\SingletonTrait;
 
@@ -37,7 +38,7 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onQuit(PlayerQuitEvent $event): void
+    public function onQuit(PlayerQuitEvent|PlayerDeathEvent $event): void
     {
         $playerName = $event->getPlayer()->getName();
         if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);

@@ -1,7 +1,12 @@
-# Setup
+## Why use this and not other areas plugins?
+This plugin has a feature i didn't found in other areas plugins: If you set an event to true, it WILL be allowed, it doesn't 
+matter if another plugin cancels it. It was made for personal use (that's why there aren't too many events) 
+to uncancel events of a plots plugin in a plot world. but i'm  sharing it to open source so you all can use it.
+
+## Setup
 Go to `plugin_data/Areas/config.yml` and setup your areas, the message to display, the events allowed, and the effects given. 
 
-# Config:
+## Config:
 ```yaml
 ---
 # Customize messages, use {AREA} if you want to display the area name. Leave them blank if you don't want to send a message

@@ -1,5 +1,6 @@
 ---
 name: Areas
+author: Mencoreh
 version: 1.0.0
 main: Mencoreh\Areas\Main
 api: 5.13.0

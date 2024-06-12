@@ -20,6 +20,7 @@ use pocketmine\event\entity\EntityEffectAddEvent;
 use pocketmine\event\entity\EntityEffectRemoveEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\Position;
@@ -102,6 +103,12 @@ class Main extends PluginBase implements Listener
         $playerName = $player->getName();
         if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
         if (isset($this->isEnteringArea[$playerName])) unset($this->isEnteringArea[$playerName]);
+    }
+
+    public function onJoin(PlayerJoinEvent $event): void
+    {
+        $player = $event->getPlayer();
+        $this->playerEffects[$player->getName()] = [];
     }
 
     public function onQuit(PlayerQuitEvent $event): void

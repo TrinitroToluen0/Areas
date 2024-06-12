@@ -31,7 +31,7 @@ class Main extends PluginBase implements Listener
 
     public array $areas = [];
     public array $playerEffects;
-    public array $isEnteringArea = [];
+    public array $isEnteringOrLeavingArea = [];
     private const EFFECT_MAX_DURATION = 2147483647;
 
     public function onEnable(): void
@@ -64,7 +64,7 @@ class Main extends PluginBase implements Listener
 
     private function enterArea(Player $player, Area $area): void
     {
-        $this->isEnteringArea[$player->getName()] = true;
+        $this->isEnteringOrLeavingArea[$player->getName()] = true;
         $messageEntering = $this->getConfig()->get('message-entering');
         if ($messageEntering) {
             $message = str_replace('{AREA}', $area->getName(), $messageEntering);
@@ -78,12 +78,12 @@ class Main extends PluginBase implements Listener
             if (!$effect) continue;
             $player->getEffects()->add(new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false));
         }
-        unset($this->isEnteringArea[$player->getName()]);
+        unset($this->isEnteringOrLeavingArea[$player->getName()]);
     }
 
     private function leaveArea(Player $player, Area $area): void
     {
-        $this->isEnteringArea[$player->getName()] = true;
+        $this->isEnteringOrLeavingArea[$player->getName()] = true;
         $player->getEffects()->clear();
         if (isset($this->playerEffects[$player->getName()])) {
             foreach ($this->playerEffects[$player->getName()] as $effect) {
@@ -95,14 +95,14 @@ class Main extends PluginBase implements Listener
             $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
             $player->sendMessage($message);
         }
-        unset($this->isEnteringArea[$player->getName()]);
+        unset($this->isEnteringOrLeavingArea[$player->getName()]);
     }
 
     public function clearPlayerData(Player $player): void
     {
         $playerName = $player->getName();
         if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
-        if (isset($this->isEnteringArea[$playerName])) unset($this->isEnteringArea[$playerName]);
+        if (isset($this->isEnteringOrLeavingArea[$playerName])) unset($this->isEnteringOrLeavingArea[$playerName]);
     }
 
     public function onJoin(PlayerJoinEvent $event): void
@@ -144,7 +144,7 @@ class Main extends PluginBase implements Listener
         $entity = $event->getEntity();
         if (!($entity instanceof Player)) return;
         if (!isset($this->playerEffects[$entity->getName()])) return;
-        if (isset($this->isEnteringArea[$entity->getName()])) return;
+        if (isset($this->isEnteringOrLeavingArea[$entity->getName()])) return;
 
         $this->playerEffects[$entity->getName()][] = $event->getEffect();
     }
@@ -154,7 +154,7 @@ class Main extends PluginBase implements Listener
         $entity = $event->getEntity();
         if (!($entity instanceof Player)) return;
         if (!isset($this->playerEffects[$entity->getName()])) return;
-        if (isset($this->isEnteringArea[$entity->getName()])) return;
+        if (isset($this->isEnteringOrLeavingArea[$entity->getName()])) return;
 
         $effectToRemove = $event->getEffect();
         foreach ($this->playerEffects[$entity->getName()] as $index => $effect) {
@@ -205,7 +205,6 @@ class Main extends PluginBase implements Listener
             }
         }
     }
-
 
     /**
      * @priority HIGH

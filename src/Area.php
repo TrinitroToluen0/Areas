@@ -28,7 +28,7 @@ class Area
     private int $z2;
 
     public function __construct($areaName) {
-        $areaData = Main::$instance->getConfig()->getNested("areas.$areaName");
+        $areaData = Main::getInstance()->getConfig()->getNested("areas.$areaName");
         $this->setName($areaName);
         $this->setBlockPlace($areaData["blockPlace"]);
         $this->setBlockBreak($areaData["blockBreak"]);
@@ -187,9 +187,9 @@ class Area
 
     public function isInside(Position $position): bool
     {
-        $x = (int) $position->getX();
-        $y = (int) $position->getY();
-        $z = (int) $position->getZ();
+        $x = $position->getFloorX();
+        $y = $position->getFloorY();
+        $z = $position->getFloorZ();
         $world = $position->getWorld()->getFolderName();
 
         return

@@ -65,7 +65,6 @@ class Main extends PluginBase implements Listener
     private function enterArea(Player $player, Area $area): void
     {
         $this->isEnteringArea[$player->getName()] = true;
-        $this->playerEffects[$player->getName()] = $player->getEffects()->all();
         $messageEntering = $this->getConfig()->get('message-entering');
         if ($messageEntering) {
             $message = str_replace('{AREA}', $area->getName(), $messageEntering);
@@ -84,18 +83,19 @@ class Main extends PluginBase implements Listener
 
     private function leaveArea(Player $player, Area $area): void
     {
+        $this->isEnteringArea[$player->getName()] = true;
+        $player->getEffects()->clear();
         if (isset($this->playerEffects[$player->getName()])) {
-            $player->getEffects()->clear();
             foreach ($this->playerEffects[$player->getName()] as $effect) {
                 $player->getEffects()->add($effect);
             }
-            unset($this->playerEffects[$player->getName()]);
         }
         $messageLeaving = $this->getConfig()->get('message-leaving');
         if ($messageLeaving) {
             $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
             $player->sendMessage($message);
         }
+        unset($this->isEnteringArea[$player->getName()]);
     }
 
     public function clearPlayerData(Player $player): void
@@ -108,7 +108,7 @@ class Main extends PluginBase implements Listener
     public function onJoin(PlayerJoinEvent $event): void
     {
         $player = $event->getPlayer();
-        $this->playerEffects[$player->getName()] = [];
+        $this->playerEffects[$player->getName()] = $player->getEffects()->all();
     }
 
     public function onQuit(PlayerQuitEvent $event): void

@@ -37,12 +37,12 @@ class Main extends PluginBase implements Listener
     {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveDefaultConfig();
+        self::setInstance($this);
+
         foreach ($this->getConfig()->get("areas") as $areaName => $areaData) {
             $area = new Area($areaName);
             array_push($this->areas, $area);
         }
-
-        self::setInstance($this);
     }
 
     private function handlePlayerMove(Player $player, Position $from, Position $to): void

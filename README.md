@@ -14,7 +14,7 @@ message-entering: "§aEntering area {AREA}" # The message to be sent to the play
 message-leaving: "§cLeaving area {AREA}" # The message to be sent to the player when leaving the area
 
 areas:
-  area1: # Area name
+  area1: # Area name, MUST be unique.
     x1: 100 # X coord of the first position
     y1: 64  # Y coord of the first position
     z1: 100 # Z coord of the first position
@@ -25,17 +25,21 @@ areas:
 
     # These are the current handled events. Set an event's value to null if you don't want the plugin to interfere with it, because if
     # an event is cancelled by another plugin (or PM itself) but you set that event to true here, the event will be uncancelled.
+    # for example, if you put entityDamage to true here, players in this area can take damage even if they are in creative gamemode.
+
     blockPlace: false # Wheter block placing is allowed in this area
     blockBreak: false # Whether block breaking is allowed in this area
-    blockInteract: true # Whether interacting with blocks (chests, doors, etc) is allowed in this area
+    playerInteract: true # Whether interacting with blocks is allowed in this area
     interactCheckType: "player" # Options are "player" and "block". If set to "player", it will check if player is in area, if set to "block" it will check if block is in area.
-    entityDamage: false # Whether entities can be damaged in this area (this includes PVP, PVE and natural damage)
+    entityDamage: null # Whether entities can be damaged in this area (this includes PVP, PVE and natural damage)
 
     # A list of the effects given when entering this area, and removed when leaving it.
     # You should put the name of the effect, then a hyphen (-), then the level of the effect.
     effects:
       - "speed-4"
-  area2: # You can add more areas following this format
+
+  # You can add more areas following this format
+  area2: 
     x1: 100
     y1: 64
     z1: 100
@@ -45,9 +49,9 @@ areas:
     world: "world"
     blockPlace: false
     blockBreak: false
-    blockInteract: true
+    playerInteract: true
     interactCheckType: "player"
     entityDamage: false
     effects:
-      - "speed-4"
+      - "night_vision"
 ```

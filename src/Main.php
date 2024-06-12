@@ -139,7 +139,7 @@ class Main extends PluginBase implements Listener
         if (!isset($this->playerEffects[$entity->getName()])) return;
         if (isset($this->isEnteringArea[$entity->getName()])) return;
 
-        $this->playerEffects[$entity->getName()][$event->getEffect()] = $event->getEffect();
+        $this->playerEffects[$entity->getName()][] = $event->getEffect();
     }
 
     public function onEffectRemove(EntityEffectRemoveEvent $event): void
@@ -149,7 +149,13 @@ class Main extends PluginBase implements Listener
         if (!isset($this->playerEffects[$entity->getName()])) return;
         if (isset($this->isEnteringArea[$entity->getName()])) return;
 
-        unset($this->playerEffects[$entity->getName()][$event->getEffect()]);
+        $effectToRemove = $event->getEffect();
+        foreach ($this->playerEffects[$entity->getName()] as $index => $effect) {
+            if ($effect === $effectToRemove) {
+                unset($this->playerEffects[$entity->getName()][$index]);
+                break;
+            }
+        }
     }
 
     /**

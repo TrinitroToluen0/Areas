@@ -16,8 +16,6 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\player\Player;
 use pocketmine\entity\effect\StringToEffectParser;
-use pocketmine\event\entity\EntityEffectAddEvent;
-use pocketmine\event\entity\EntityEffectRemoveEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -31,7 +29,6 @@ class Main extends PluginBase implements Listener
 
     public array $areas = [];
     public array $playerEffects;
-    public array $isEnteringOrLeavingArea = [];
     private const EFFECT_MAX_DURATION = 2147483647;
 
     public function onEnable(): void
@@ -64,7 +61,6 @@ class Main extends PluginBase implements Listener
 
     private function enterArea(Player $player, Area $area): void
     {
-        $this->isEnteringOrLeavingArea[$player->getName()] = true;
         $messageEntering = $this->getConfig()->get('message-entering');
         if ($messageEntering) {
             $message = str_replace('{AREA}', $area->getName(), $messageEntering);
@@ -73,36 +69,54 @@ class Main extends PluginBase implements Listener
         foreach ($area->getEffects() as $effectData) {
             $effectData = explode('-', $effectData);
             $effectName = $effectData[0];
-            $amplifier = (int) ($effectData[1] ?? 1) - 1;
+            $amplifier = (int)($effectData[1] ?? 1) - 1;
             $effect = StringToEffectParser::getInstance()->parse($effectName);
             if (!$effect) continue;
-            $player->getEffects()->add(new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false));
+
+            $effectInstance = new EffectInstance($effect, self::EFFECT_MAX_DURATION, $amplifier, false);
+
+            // Verificar si el jugador ya tiene el efecto y guardarlo en playerEffects
+            if ($player->getEffects()->has($effect)) {
+                $existingEffect = $player->getEffects()->get($effect);
+                $this->playerEffects[$player->getName()][$effect] = $existingEffect;
+            }
+
+            $player->getEffects()->add($effectInstance);
         }
-        unset($this->isEnteringOrLeavingArea[$player->getName()]);
     }
 
     private function leaveArea(Player $player, Area $area): void
     {
-        $this->isEnteringOrLeavingArea[$player->getName()] = true;
-        $player->getEffects()->clear();
+
+        // Limpiar los efectos otorgados por el área
+        foreach ($area->getEffects() as $effectData) {
+            $effectData = explode('-', $effectData);
+            $effectName = $effectData[0];
+            $effect = StringToEffectParser::getInstance()->parse($effectName);
+            if ($effect && $player->getEffects()->has($effect)) {
+                $player->getEffects()->remove($effect);
+            }
+        }
+
+        // Restaurar los efectos guardados en playerEffects
         if (isset($this->playerEffects[$player->getName()])) {
             foreach ($this->playerEffects[$player->getName()] as $effect) {
                 $player->getEffects()->add($effect);
             }
+            unset($this->playerEffects[$player->getName()]);
         }
         $messageLeaving = $this->getConfig()->get('message-leaving');
         if ($messageLeaving) {
             $message = str_replace('{AREA}', $area->getName(), $messageLeaving);
             $player->sendMessage($message);
         }
-        unset($this->isEnteringOrLeavingArea[$player->getName()]);
     }
+
 
     public function clearPlayerData(Player $player): void
     {
         $playerName = $player->getName();
         if (isset($this->playerEffects[$playerName])) unset($this->playerEffects[$playerName]);
-        if (isset($this->isEnteringOrLeavingArea[$playerName])) unset($this->isEnteringOrLeavingArea[$playerName]);
     }
 
     public function onJoin(PlayerJoinEvent $event): void
@@ -136,32 +150,6 @@ class Main extends PluginBase implements Listener
             $from = $event->getFrom();
             $to = $event->getTo();
             $this->handlePlayerMove($entity, $from, $to);
-        }
-    }
-
-    public function onEffectAdd(EntityEffectAddEvent $event): void
-    {
-        $entity = $event->getEntity();
-        if (!($entity instanceof Player)) return;
-        if (!isset($this->playerEffects[$entity->getName()])) return;
-        if (isset($this->isEnteringOrLeavingArea[$entity->getName()])) return;
-
-        $this->playerEffects[$entity->getName()][] = $event->getEffect();
-    }
-
-    public function onEffectRemove(EntityEffectRemoveEvent $event): void
-    {
-        $entity = $event->getEntity();
-        if (!($entity instanceof Player)) return;
-        if (!isset($this->playerEffects[$entity->getName()])) return;
-        if (isset($this->isEnteringOrLeavingArea[$entity->getName()])) return;
-
-        $effectToRemove = $event->getEffect();
-        foreach ($this->playerEffects[$entity->getName()] as $index => $effect) {
-            if ($effect === $effectToRemove) {
-                unset($this->playerEffects[$entity->getName()][$index]);
-                break;
-            }
         }
     }
 

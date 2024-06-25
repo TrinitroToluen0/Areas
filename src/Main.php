@@ -78,7 +78,7 @@ class Main extends PluginBase implements Listener
             // Verificar si el jugador ya tiene el efecto y guardarlo en playerEffects
             if ($player->getEffects()->has($effect)) {
                 $existingEffect = $player->getEffects()->get($effect);
-                $this->playerEffects[$player->getName()][$effect] = $existingEffect;
+                $this->playerEffects[$player->getName()][] = $existingEffect;
             }
 
             $player->getEffects()->add($effectInstance);

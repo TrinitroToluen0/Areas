@@ -48,7 +48,7 @@ class Main extends PluginBase implements Listener
 
     private function handlePlayerMove(Player $player, Position $from, Position $to): void
     {
-        if($from === $to) return;
+        if($from->equals($to)) return;
 
         /** @var Area $area */
         foreach ($this->areas as $area) {

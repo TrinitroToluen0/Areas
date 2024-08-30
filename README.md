@@ -27,7 +27,7 @@ areas:
     # an event is cancelled by another plugin (or PM itself) but you set that event to true here, the event will be uncancelled.
     # for example, if you put entityDamage to true here, players in this area can take damage even if they are in creative gamemode.
 
-    blockPlace: false # Wheter block placing is allowed in this area
+    blockPlace: false # Whether block placing is allowed in this area
     blockBreak: false # Whether block breaking is allowed in this area
     playerInteract: true # Whether interacting with blocks is allowed in this area
     interactCheckType: "player" # Options are "player" and "block". If set to "player", it will check if player is in area, if set to "block" it will check if block is in area.
